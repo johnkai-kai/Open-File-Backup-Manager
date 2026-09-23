@@ -88,8 +88,8 @@ async function previewRobocopy(sourcePath,destinationPath,{signal,logRoot=os.tmp
   const links=[];
   for(const linkPath of excludedLinks){
     if(typeof linkPath!=='string'||!path.isAbsolute(linkPath))throw new Error('Invalid link exclusion path.');
-    const link=path.resolve(linkPath),relative=relativePath(source,link);
-    await safePath(path.dirname(link));
+    const link=path.join(await safePath(path.dirname(linkPath)),path.basename(linkPath));
+    const relative=relativePath(source,link);
     if(!(await fs.lstat(link)).isSymbolicLink())throw new Error('Link exclusion is not a link: '+link);
     links.push({source:link,destination:path.join(destination,relative)});
   }

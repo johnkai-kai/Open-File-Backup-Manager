@@ -5,7 +5,7 @@ const {randomUUID} = require('node:crypto');
 const {performance} = require('node:perf_hooks');
 const fs = require('node:fs/promises');
 const {Store,validate} = require('./store.cjs');
-const {planJob,executePlan,validatePairs} = require('./engine.cjs');
+const {planJob,executePlan,validatePairs,safePath} = require('./engine.cjs');
 const drives = require('./volumes.cjs');
 const {autoUpdater} = require('electron-updater');
 const {Updates}=require('./updates.cjs');
@@ -79,7 +79,7 @@ async function run(token,confirmation={}) {
       try{
         const list=await drives.volumes();
         drives.requirePhysical(plan.source,list);drives.requirePhysical(plan.destination,list);
-        if(drives.resolve(plan.job.source,plan.job.sourceVolume,list)!==plan.source||drives.resolve(plan.job.destination,plan.job.destinationVolume,list)!==plan.destination)throw new Error('Drive location changed. Scan again.');
+        if(await safePath(drives.resolve(plan.job.source,plan.job.sourceVolume,list))!==plan.source||await safePath(drives.resolve(plan.job.destination,plan.job.destinationVolume,list))!==plan.destination)throw new Error('Drive location changed. Scan again.');
         const result=await executePlan(plan,{signal:controller.signal,confirmDelete:true,volumeList:list,onLog:event=>{if(event.status==='command'){detail.command=event.command;detail.executable=event.executable;detail.args=event.args;}else if(event.status==='preview-command'){detail.recheckCommands??=[];detail.recheckCommands.push(event.command);}else if(event.status==='engine-result'){detail.exitCode=event.exitCode;detail.copied=event.copied;detail.skipped=event.skipped;detail.transferred=event.transferred;}else if(event.status==='timing')detail.timings[event.stage+'Ms']=event.durationMs;else if(event.status==='link-skipped'&&detail.skippedLinks.length<50)detail.skippedLinks.push(event.path);else if(event.status==='deleted'&&detail.deletedPaths.length<50)detail.deletedPaths.push(event.path);},onProgress:event=>report({...context,...event,jobTotalBytes:event.totalBytes,totalBytes,transferred:transferKnown&&event.transferred!==null?finishedBytes+event.transferred:null})});
         failed+=result.failed;warnings+=result.warnings;if(result.transferred===null)transferKnown=false;else finishedBytes+=result.transferred;results.push(result);
         Object.assign(detail,{status:result.warnings?'warning':'completed',copied:result.copied,skipped:result.skipped,deleted:result.deleted,warnings:result.warnings,transferred:result.transferred});

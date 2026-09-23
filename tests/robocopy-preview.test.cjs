@@ -24,11 +24,11 @@ test('native /L mirror preview reports Unicode paths, copies, extra folders and 
   const old=await fs.stat(path.join(dst,'多餘 資料夾','舊檔.txt'));
   const result=await previewRobocopy(src,dst,{logRoot:root});
   assert.equal(result.exitCode,3);
-  assert.deepEqual(result.command.args.slice(0,2),[src,dst]);
+  assert.deepEqual(result.command.args.slice(0,2),[await fs.realpath(src),await fs.realpath(dst)]);
   assert.ok(result.command.args.includes('/L'));
   assert.ok(result.command.args.includes('/MIR'));
   assert.ok(result.command.args.includes('/XJ'));
-  assert.ok(result.command.text.includes(src)&&result.command.text.includes(dst));
+  assert.ok(result.command.text.includes(result.command.args[0])&&result.command.text.includes(result.command.args[1]));
   assert.deepEqual(result.copy.map(item=>item.relativePath),['新檔.txt']);
   assert.deepEqual(result.remove.map(item=>item.relativePath).sort(),['多餘 資料夾','多餘 資料夾\\舊檔.txt'].sort());
   assert.equal(result.remove.find(item=>item.kind==='dir').bytes,null);
@@ -97,8 +97,8 @@ test('single-file copy preview filters source siblings and destination extras',{
   await fs.writeFile(path.join(source,'sibling.txt'),'unrelated');
   await fs.writeFile(path.join(destination,'extra.txt'),'preserve');
   const result=await previewRobocopy(selected,destination,{mode:'copy',logRoot:root});
-  assert.equal(result.source,selected);
-  assert.deepEqual(result.command.args.slice(0,3),[source,destination,'選定 file.txt']);
+  assert.equal(result.source,await fs.realpath(selected));
+  assert.deepEqual(result.command.args.slice(0,3),[await fs.realpath(source),await fs.realpath(destination),'選定 file.txt']);
   assert.ok(result.command.args.includes('/LEV:1'));
   assert.ok(result.command.args.includes('/XX'));
   assert.deepEqual(result.copy.map(item=>item.relativePath),['選定 file.txt']);
