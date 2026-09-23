@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'">
+  <title>Open File Backup Manager</title>
+  <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+  <header class="titlebar"><span class="brand-emblem"><img class="brand-mark" src="src/assets/fold.svg" alt=""></span><span class="app-name">Open File Backup Manager</span><span id="environment"></span><div id="window-controls"></div></header>
+  <div class="shell"><nav id="sidebar" aria-label="Main navigation"></nav><main id="main"></main><aside id="inspector"></aside></div>
+  <footer id="progress" aria-live="polite"></footer>
+  <dialog id="dialog"></dialog>
+  <div id="toast" role="alert" hidden></div>
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>

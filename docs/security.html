@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Security and release verification — Open File Backup Manager</title>
+<style>body{margin:0;background:#18221f;color:#edf1e9;font:16px/1.7 system-ui,sans-serif}main{max-width:900px;margin:auto;padding:48px 24px}a{color:#d6edce}h1{font-size:clamp(2rem,4vw,3rem)}h2{margin-top:38px}p,li{color:#d7dfd4}table{width:100%;border-collapse:collapse}th,td{padding:12px;text-align:left;border-bottom:1px solid #ffffff30}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#ffffff14;padding:16px;border-radius:12px}.note{padding:16px;border-left:3px solid #c9dbc4;background:#ffffff12}</style>
+<main>
+<h1>Security and release verification</h1>
+<p>Open File Backup Manager reads and writes only the local paths selected for a backup. Mirror mode can remove destination-only items after a successful copy and source recheck, but only if the user confirms the exact deletion preview. These boundaries are enforced by the desktop process as well as the interface.</p>
+<p class="note">No antivirus result, checksum, signature, open-source license, or build attestation proves software is harmless. Each check answers a different question.</p>
+<h2>What the release evidence means</h2>
+<table><tr><th>Evidence</th><th>What it can establish</th><th>Limit</th></tr>
+<tr><td>Public source and tests</td><td>Behavior can be inspected and test cases reproduced.</td><td>Tests cannot cover every device, file, or failure.</td></tr>
+<tr><td>Dependency audit</td><td>Known advisories reported at scan time.</td><td>Unknown defects may remain.</td></tr>
+<tr><td>Microsoft Defender scan</td><td>The scanned installer had no threat detected by that engine and intelligence version, if the release evidence reports a clean result.</td><td>Other engines or later definitions may differ.</td></tr>
+<tr><td>SHA-256 checksum</td><td>The downloaded bytes match the published digest.</td><td>A matching digest does not establish publisher identity.</td></tr>
+<tr><td>Build provenance</td><td>A verified attestation can link an artifact to the public workflow and source revision.</td><td>The source may still contain defects.</td></tr>
+<tr><td>Windows code signature</td><td>Publisher identity and post-signing integrity, when present.</td><td>The v1.0.0 installer is planned to be unsigned; a signature never guarantees safe behavior.</td></tr></table>
+<h2>Verify the actual download</h2>
+<p>Get the installer and <code>SHA256SUMS.txt</code> from the same <a href="https://github.com/johnkai-kai/Open-File-Backup-Manager/releases">official release</a>. Compare the full digest in PowerShell:</p>
+<pre>Get-FileHash .\Open-File-Backup-Manager-Setup.exe -Algorithm SHA256
+Get-AuthenticodeSignature .\Open-File-Backup-Manager-Setup.exe</pre>
+<p>For build provenance, use GitHub CLI with the downloaded installer:</p>
+<pre>gh attestation verify .\Open-File-Backup-Manager-Setup.exe --repo johnkai-kai/Open-File-Backup-Manager</pre>
+<p>Check the result against the specific release's source revision and workflow. An unsigned installer may show an unrecognized-publisher message in Windows. Do not disable antivirus or system protections to run it.</p>
+<h2>Runtime boundaries</h2>
+<ul><li>Robocopy is the sole transfer backend. The app invokes the Windows executable with an argument array, not through a command shell, and does not bundle a Microsoft executable or fallback copy engine.</li>
+<li>Root links, unmatched destination links, drive-root destinations, protected application paths, ambiguous device names, and destructive path overlaps are rejected. Nested source links are skipped without following their targets; matching destination content is preserved.</li>
+<li>Robocopy's list-only mode previews source and destination changes. The app validates paths and repeats that preview before copying and before confirmed mirror deletion. A failed copy, cancellation, or changed source blocks deletion. Preview tokens expire. Direct writes may still leave the current destination file incomplete after interruption.</li>
+<li>The interface is sandboxed and isolated from Node.js. A limited preload bridge validates calls from the application's main frame. Remote navigation, popup windows, and permission requests are denied.</li>
+<li>The app does not provide filesystem snapshots or a guarantee against sudden power loss, physical drive failure, or another local process racing changes during a backup.</li></ul>
+<h2>Network and local privacy</h2>
+<p>Backup content is not uploaded by the app. If automatic checks are enabled, the updater contacts GitHub and its download infrastructure. New installations check and download updates automatically, then wait for manual installation; users can change these options in Settings. Network services receive ordinary request metadata such as IP addresses. Fonts and visual assets are bundled locally.</p>
+<p>Settings and Activity stay in the current user's application-data directory. Logs include Robocopy commands and may contain personal file paths. Review and redact them before sharing. The uninstaller can remove app settings and logs; it does not remove backup sources or destinations.</p>
+<h2>Report a vulnerability</h2>
+<p>Use <a href="https://github.com/johnkai-kai/Open-File-Backup-Manager/security/advisories/new">private vulnerability reporting</a>. Include the affected version and a minimal reproduction using non-sensitive test files. Avoid publishing personal file paths or exploit details in a public issue.</p>
+</main>
+</html>

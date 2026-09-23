@@ -1,0 +1,92 @@
+name: Verified Windows release candidate
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: node tools/tray-smoke.cjs
+      - run: npm audit --audit-level=low
+      - run: npm run build
+      - name: Verify packaged backup behavior
+        env:
+          OFBM_PACKAGED: '1'
+        run: |
+          node tools/asar-smoke.cjs
+          if ($LASTEXITCODE -ne 0) { throw 'Packaged ASAR regression failed' }
+          node tools/desktop-smoke.cjs
+          if ($LASTEXITCODE -ne 0) { throw 'Packaged desktop smoke failed' }
+          node tools/interaction-smoke.cjs
+          if ($LASTEXITCODE -ne 0) { throw 'Packaged interaction smoke failed' }
+          node tools/activity-command-smoke.cjs
+          if ($LASTEXITCODE -ne 0) { throw 'Packaged Activity command smoke failed' }
+          node tools/cancel-smoke.cjs
+          if ($LASTEXITCODE -ne 0) { throw 'Packaged cancellation smoke failed' }
+          node tools/drive-safety-smoke.cjs
+          if ($LASTEXITCODE -ne 0) { throw 'Packaged drive-safety smoke failed' }
+          node tools/update-policy-smoke.cjs
+          if ($LASTEXITCODE -ne 0) { throw 'Packaged update policy smoke failed' }
+      - name: Prepare verifiable release files
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          node tools/release-metadata.cjs
+          if ($LASTEXITCODE -ne 0) { throw 'Metadata generation failed' }
+          New-Item -ItemType Directory -Path release/publish | Out-Null
+          Copy-Item "release/Open-File-Backup-Manager-$version-Setup.exe" release/publish/Open-File-Backup-Manager-Setup.exe
+          Copy-Item "release/Open-File-Backup-Manager-$version-Setup.exe.blockmap" release/publish/Open-File-Backup-Manager-Setup.exe.blockmap
+          $metadata = Get-Content -Raw "release/metadata/$version/latest.yml"
+          $metadata.Replace("Open-File-Backup-Manager-$version-Setup.exe", 'Open-File-Backup-Manager-Setup.exe') | Set-Content release/publish/latest.yml
+          $hash = (Get-FileHash release/publish/Open-File-Backup-Manager-Setup.exe -Algorithm SHA256).Hash.ToLower()
+          "$hash  Open-File-Backup-Manager-Setup.exe" | Set-Content release/publish/SHA256SUMS.txt
+          npm sbom --sbom-format cyclonedx --omit=dev > release/publish/sbom.cdx.json
+          if ($LASTEXITCODE -ne 0) { throw 'SBOM generation failed' }
+          npm audit --json > release/publish/dependency-audit.json
+          if ($LASTEXITCODE -ne 0) { throw 'Dependency audit failed' }
+      - name: Scan installer with Microsoft Defender
+        shell: pwsh
+        run: |
+          $scanner = Get-ChildItem "$env:ProgramData/Microsoft/Windows Defender/Platform/*/MpCmdRun.exe" | Sort-Object FullName -Descending | Select-Object -First 1
+          if (!$scanner) { throw 'Microsoft Defender is unavailable' }
+          $target = (Get-Item release/publish/Open-File-Backup-Manager-Setup.exe).FullName
+          $scanOutput = & $scanner.FullName -Scan -ScanType 3 -File $target -DisableRemediation 2>&1
+          $scanExit = $LASTEXITCODE
+          $scanOutput | ForEach-Object { "$_".Replace($target, 'Open-File-Backup-Manager-Setup.exe') } | Set-Content release/publish/antivirus-scan.txt
+          Get-MpComputerStatus | Select-Object AMProductVersion,AntivirusSignatureVersion,AntivirusSignatureLastUpdated | ConvertTo-Json | Set-Content release/publish/antivirus-engine.json
+          if ($scanExit -ne 0) { throw "Defender scan failed: $scanExit" }
+      - name: Attest build provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        with:
+          subject-path: release/publish/Open-File-Backup-Manager-Setup.exe
+      - name: Save candidate artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: verified-windows-candidate
+          path: release/publish/*
+          if-no-files-found: error
+      - name: Create draft for final download and upgrade verification
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          $files = (Get-ChildItem release/publish -File).FullName
+          gh release create "v$version" @files --draft --target "$env:GITHUB_SHA" --title "Open File Backup Manager $version" --notes "Release candidate. Public build checks and provenance are available; final download and upgrade validation is pending. Installer is unsigned."
+          if ($LASTEXITCODE -ne 0) { throw 'Draft creation failed' }

@@ -1,0 +1,4 @@
+const {contextBridge,ipcRenderer}=require('electron');
+const call=name=>(...args)=>ipcRenderer.invoke(name,...args);
+const subscribe=name=>callback=>{const handler=(_,value)=>callback(value);ipcRenderer.on(name,handler);return()=>ipcRenderer.removeListener(name,handler);};
+contextBridge.exposeInMainWorld('backup',{load:call('load'),save:call('save'),pick:call('pick'),prepare:call('prepare'),run:call('run'),cancel:call('cancel'),history:call('history'),storagePaths:call('storage-paths'),copyStoragePath:call('copy-storage-path'),openStoragePath:call('open-storage-path'),robocopyStatus:call('robocopy-status'),loginItemStatus:call('login-item-status'),showLogs:call('show-logs'),updates:call('updates'),windowControl:call('window-control'),onProgress:subscribe('progress'),onResult:subscribe('job-result'),onUpdate:subscribe('update-status'),onLogError:subscribe('log-error')});

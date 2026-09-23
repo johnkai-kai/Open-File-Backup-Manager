@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1920, initial-scale=1">
+  <title>Open File Backup Manager — launch artwork</title>
+  <style>
+    @font-face{font-family:Instrument;src:url('../src/assets/InstrumentSans.ttf')}
+    @font-face{font-family:Manrope;src:url('../src/assets/Manrope.ttf')}
+    *{box-sizing:border-box}
+    html,body{width:1920px;height:1080px;margin:0;overflow:hidden}
+    body{color:#fff;font-family:Manrope,sans-serif;background:#050606}
+    main{width:100%;height:100%;padding:72px 92px 55px}
+    .brand{display:flex;align-items:center;gap:24px;height:112px}
+    .brand img{width:106px;height:106px;border-radius:23px}
+    .brand span{font-size:24px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#e6e8e6}
+    .brand .project-link{margin-left:auto;font-size:20px;font-weight:550;letter-spacing:0;text-transform:none;color:#cdd3d0}
+    .content{display:grid;grid-template-columns:565px minmax(0,1fr);gap:36px;align-items:center;height:780px;margin-top:38px}
+    h1{margin:0 0 40px;font-family:Instrument,sans-serif;font-size:101px;font-weight:650;letter-spacing:-.055em;line-height:.98}
+    .lead{max-width:550px;margin:0;color:#e2e6e3;font-size:28px;line-height:1.48}
+    .meta{margin-top:73px;font-size:23px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#e2e6e3}
+    .preview{overflow:hidden;align-self:center;border:1px solid rgba(245,246,239,.42);border-radius:25px;background:#202826;box-shadow:0 30px 85px rgba(0,0,0,.55)}
+    .preview img{width:100%;height:auto;display:block}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand"><img src="../src/assets/app-icon.png" alt="Open File Backup Manager logo"><span>Windows · Open source</span><span class="project-link">github.com/johnkai-kai/Open-File-Backup-Manager</span></div>
+    <div class="content">
+      <div>
+        <h1>Open File<br>Backup Manager</h1>
+        <p class="lead">A Windows desktop app for repeatable local backups. Save jobs in profiles and run them with Robocopy.</p>
+        <div class="meta">MIT License</div>
+      </div>
+      <div>
+        <div class="preview"><img src="assets/interface-dark.png" alt="Design preview of the backup manager"></div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
