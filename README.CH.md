@@ -17,7 +17,7 @@ Windows x64 · v1.0.0 · [所有發行版](https://github.com/johnkai-kai/Open-F
 
 **目前僅支援 Windows · MIT 授權**
 
-![繁體中文深色主畫面](docs/assets/landscape-zh-TW.png)
+![深色主畫面與示範備份工作](docs/assets/landscape-profile.png)
 
 ## 功能
 
@@ -66,7 +66,7 @@ Robocopy 會直接寫入目的地。介面顯示目前工作與最近回報的�
 
 介面預設英文，可在設定切換繁體中文；主題可選淺色、深色或跟隨系統。預設不在登入 Windows 後自動啟動，關閉視窗則直接退出。你可以改成留在右下角通知區，從圖示重新開啟或退出；備份或預覽進行時不能藉由關閉視窗把它藏起來。
 
-![設定頁：Robocopy 與本機資料位置](docs/assets/landscape-settings-zh-TW.png)
+![設定頁：Robocopy 與本機資料位置](docs/assets/landscape-settings.png)
 
 新安裝預設自動檢查並下載更新，安裝前由使用者操作。自動檢查和下載可分別關閉，也能手動檢查。可另外啟用閒置時自動安裝；這個選項可能重新啟動程式，但備份或預覽進行中不會安裝。
 
