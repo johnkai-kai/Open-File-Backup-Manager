@@ -2,7 +2,9 @@
 
 # <img src="src/assets/app-icon.png" width="42" alt="Open File Backup Manager 標誌"> Open File Backup Manager
 
-Windows 開源檔案備份工具。把來源與目的地存成備份工作(Job)，再依用途放進設定檔(Profile)。可以執行單一工作、整組設定檔或全部備份。實際檔案傳輸全部交由 Windows 內建複製工具(Robocopy)處理。
+這是一款可重複執行本機備份的 Windows 桌面應用程式。將來源與目的地存成具名設定檔中的備份工作，之後可執行單一工作、整組設定檔或全部設定檔。每次檔案傳輸都由 Windows 內建的 Robocopy 處理。
+
+> **注意：**此發行版不包含 Robocopy 的原始碼，且僅與 Windows 作業系統相容。
 
 [English](README.md) · [繁體中文](README.CH.md)
 

@@ -4,6 +4,8 @@
 
 A Windows desktop app for repeatable local backups. Save sources and destinations as jobs inside named profiles, then run one job, one profile, or all profiles. Windows' built-in Robocopy handles every transfer.
 
+> **Notice:** This release does not include the Robocopy source code and is only compatible with the Windows OS.
+
 [English](README.md) · [Traditional Chinese](README.CH.md)
 
 ## [⬇ Download for Windows — installer (.exe)](https://github.com/johnkai-kai/Open-File-Backup-Manager/releases/latest/download/Open-File-Backup-Manager-Setup.exe)
