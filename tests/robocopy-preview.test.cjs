@@ -180,10 +180,11 @@ test('/XJ excludes a junction and its destination counterpart',{skip:process.pla
   await fs.symlink(outside,path.join(source,'linked'),'junction');
   await fs.mkdir(path.join(destination,'linked'));await fs.writeFile(path.join(destination,'linked','keep.txt'),'keep');
   const result=await previewRobocopy(source,destination,{logRoot:root,excludedLinks:[path.join(source,'linked')]});
+  const canonicalSource=await fs.realpath(source),canonicalDestination=await fs.realpath(destination);
   assert.deepEqual(result.copy,[]);assert.deepEqual(result.remove,[]);
-  assert.deepEqual(result.excludedLinks,[{source:path.join(source,'linked'),destination:path.join(destination,'linked')}]);
+  assert.deepEqual(result.excludedLinks,[{source:path.join(canonicalSource,'linked'),destination:path.join(canonicalDestination,'linked')}]);
   assert.ok(result.command.args.includes('/XF')&&result.command.args.includes('/XD'));
-  assert.ok(result.command.args.includes(path.join(source,'linked'))&&result.command.args.includes(path.join(destination,'linked')));
+  assert.ok(result.command.args.includes(path.join(canonicalSource,'linked'))&&result.command.args.includes(path.join(canonicalDestination,'linked')));
   assert.equal(await fs.readFile(path.join(destination,'linked','keep.txt'),'utf8'),'keep');
 });
 
